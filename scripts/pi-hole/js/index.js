@@ -8,8 +8,10 @@
 /* global utils:false, Chart:false, updateSessionTimer:false */
 
 // Define global variables
-var timeLineChart, clientsChart;
-var queryTypePieChart, forwardDestinationPieChart;
+var timeLineChart;
+var clientsChart;
+var queryTypePieChart;
+var forwardDestinationPieChart;
 
 var THEME_COLORS = [
   "#3c8dbc",
@@ -111,7 +113,9 @@ var customTooltips = function (tooltip) {
   var caretX = tooltip.caretX;
   var caretY = tooltip.caretY;
   var caretPadding = tooltip.caretPadding;
-  var tooltipX, tooltipY, arrowX;
+  var tooltipX;
+  var tooltipY;
+  var arrowX;
   var arrowMinIndent = 2 * tooltip.cornerRadius;
   var arrowSize = 5;
 
@@ -253,9 +257,9 @@ function updateQueriesOverTime() {
       if (Object.prototype.hasOwnProperty.call(data.ads_over_time[0], hour)) {
         var h = parseInt(data.domains_over_time[0][hour], 10);
         var d =
-          parseInt(data.ads_over_time[0][0], 10) < 1200
-            ? new Date().setHours(Math.floor(h / 6), 10 * (h % 6), 0, 0)
-            : new Date(1000 * h);
+          parseInt(data.ads_over_time[0][0], 10) < 1200 ?
+            new Date().setHours(Math.floor(h / 6), 10 * (h % 6), 0, 0) :
+            new Date(1000 * h);
 
         timeLineChart.data.labels.push(d);
         var blocked = data.ads_over_time[1][hour];
@@ -290,10 +294,10 @@ function updateQueryTypesPie() {
       return;
     }
 
-    var v = [],
-      c = [],
-      k = [],
-      i = 0;
+    var v = [];
+    var c = [];
+    var k = [];
+    var i = 0;
     // Collect values and colors, and labels
     var iter = Object.prototype.hasOwnProperty.call(data, "querytypes") ? data.querytypes : data;
 
@@ -391,9 +395,9 @@ function updateClientsOverTime() {
         data: [],
         // If we ran out of colors, make a random one
         backgroundColor:
-          i < THEME_COLORS.length
-            ? THEME_COLORS[i]
-            : "#" + (0x1000000 + Math.random() * 0xffffff).toString(16).substr(1, 6),
+          i < THEME_COLORS.length ?
+            THEME_COLORS[i] :
+            "#" + (0x1000000 + Math.random() * 0xFFFFFF).toString(16).substr(1, 6),
         pointRadius: 0,
         pointHitRadius: 5,
         pointHoverRadius: 5,
@@ -442,11 +446,11 @@ function updateForwardDestinationsPie() {
       return;
     }
 
-    var v = [],
-      c = [],
-      k = [],
-      i = 0,
-      values = [];
+    var v = [];
+    var c = [];
+    var k = [];
+    var i = 0;
+    var values = [];
 
     // Collect values and colors
     Object.keys(data.forward_destinations).forEach(function (key) {
@@ -515,7 +519,13 @@ function updateTopClientsChart() {
     // Clear tables before filling them with data
     $("#client-frequency td").parent().remove();
     var clienttable = $("#client-frequency").find("tbody:last");
-    var client, percentage, clientname, clientip, idx, url;
+    var client;
+    var percentage;
+    var clientname;
+    var clientip;
+    var idx;
+    var url;
+
     for (client in data.top_sources) {
       if (Object.prototype.hasOwnProperty.call(data.top_sources, client)) {
         // Sanitize client
@@ -631,9 +641,14 @@ function updateTopLists() {
     // Clear tables before filling them with data
     $("#domain-frequency td").parent().remove();
     $("#ad-frequency td").parent().remove();
+
     var domaintable = $("#domain-frequency").find("tbody:last");
     var adtable = $("#ad-frequency").find("tbody:last");
-    var url, domain, percentage, urlText;
+    var url;
+    var domain;
+    var percentage;
+    var urlText;
+
     for (domain in data.top_queries) {
       if (Object.prototype.hasOwnProperty.call(data.top_queries, domain)) {
         // Sanitize domain

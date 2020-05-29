@@ -71,7 +71,8 @@ $(function () {
   );
 });
 
-var tableApi, statistics;
+var tableApi;
+var statistics;
 
 function handleAjaxError(xhr, textStatus) {
   if (textStatus === "timeout") {
@@ -181,9 +182,9 @@ function refreshTableData() {
 }
 
 $(function () {
-  var APIstring = instantquery
-    ? "api_db.php?getAllQueries&from=" + from + "&until=" + until
-    : "api_db.php?getAllQueries=empty";
+  var APIstring = instantquery ?
+    "api_db.php?getAllQueries&from=" + from + "&until=" + until :
+    "api_db.php?getAllQueries=empty";
 
   // Check if query type filtering is enabled
   var queryType = getQueryTypes();
@@ -194,7 +195,9 @@ $(function () {
 
   tableApi = $("#all-queries").DataTable({
     rowCallback: function (row, data) {
-      var fieldtext, buttontext, color;
+      var fieldtext;
+      var buttontext;
+      var color;
       switch (data[4]) {
         case 1:
           color = "red";

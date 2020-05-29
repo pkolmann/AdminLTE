@@ -167,7 +167,9 @@ function loadCacheInfo() {
   });
 }
 
-var leasetable, staticleasetable;
+var leasetable;
+var staticleasetable;
+
 $(function () {
   if (document.getElementById("DHCPLeasesTable")) {
     leasetable = $("#DHCPLeasesTable").DataTable({

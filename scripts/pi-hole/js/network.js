@@ -118,7 +118,10 @@ $(function () {
         index = 0;
         for (index = 0; index < maxiter; index++) {
           name = data.name[index];
-          if (name.length === 0) continue;
+          if (name.length === 0) {
+            continue;
+          }
+
           names.push('<a href="queries.php?client=' + name + '">' + name + "</a>");
         }
 

@@ -18,18 +18,19 @@ $.extend($.fn.dataTableExt.oSort, {
       return Infinity;
     }
 
-    var i, item;
+    var i;
+    var item;
     // Use the first IP in case there is a list of IPs
     // for a given device
     if (Array.isArray(a)) {
       a = a[0];
     }
 
-    var m = a.split("."),
-      n = a.split(":"),
-      x = "",
-      xa = "",
-      cidr = [];
+    var m = a.split(".");
+    var n = a.split(":");
+    var x = "";
+    var xa = "";
+    var cidr = [];
     if (m.length === 4) {
       // IPV4 (possibly with CIDR)
       cidr = m[3].split("/");
@@ -110,10 +111,10 @@ $.extend($.fn.dataTableExt.oSort, {
   },
 
   "ip-address-asc": function (a, b) {
-    return a < b ? -1 : a > b ? 1 : 0;
+    return a < b ? -1 : (a > b ? 1 : 0);
   },
 
   "ip-address-desc": function (a, b) {
-    return a < b ? 1 : a > b ? -1 : 0;
+    return a < b ? 1 : (a > b ? -1 : 0);
   }
 });
