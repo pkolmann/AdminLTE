@@ -43,7 +43,7 @@ function piholeChanged(action) {
 function countDown() {
   var ena = $("#enableLabel");
   var enaT = $("#enableTimer");
-  var target = new Date(parseInt(enaT.html(), 10));
+  var target = new Date(parseInt(enaT.text(), 10));
   var seconds = Math.round((target.getTime() - new Date().getTime()) / 1000);
 
   if (seconds > 0) {
@@ -81,7 +81,7 @@ function piholeChange(action, duration) {
           btnStatus.html("");
           piholeChanged("disabled");
           if (duration > 0) {
-            enaT.html(new Date().getTime() + duration * 1000);
+            enaT.text(new Date().getTime() + duration * 1000);
             setTimeout(countDown, 100);
           }
         }
@@ -170,16 +170,16 @@ function initCPUtemp() {
       switch (unit) {
         case "K":
           temperature += 273.15;
-          displaytemp.html(temperature.toFixed(1) + "&nbsp;&deg;K");
+          displaytemp.text(temperature.toFixed(1) + "&nbsp;&deg;K");
           break;
 
         case "F":
           temperature = (temperature * 9) / 5 + 32;
-          displaytemp.html(temperature.toFixed(1) + "&nbsp;&deg;F");
+          displaytemp.text(temperature.toFixed(1) + "&nbsp;&deg;F");
           break;
 
         default:
-          displaytemp.html(temperature.toFixed(1) + "&nbsp;&deg;C");
+          displaytemp.text(temperature.toFixed(1) + "&nbsp;&deg;C");
           break;
       }
     }
@@ -206,7 +206,7 @@ function initCPUtemp() {
 
 $(function () {
   var enaT = $("#enableTimer");
-  var target = new Date(parseInt(enaT.html(), 10));
+  var target = new Date(parseInt(enaT.text(), 10));
   var seconds = Math.round((target.getTime() - new Date().getTime()) / 1000);
   if (seconds > 0) {
     setTimeout(countDown, 100);
