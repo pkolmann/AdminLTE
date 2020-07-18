@@ -1,55 +1,52 @@
 <?php
 /* Pi-hole: A black hole for Internet advertisements
-*  (c) 2017 Pi-hole, LLC (https://pi-hole.net)
-*  Network-wide ad blocking via your own hardware.
-*
-*  This file is copyright under the latest version of the EUPL.
-*  Please see LICENSE file for your rights under this license. */
+ *  (c) 2017 Pi-hole, LLC (https://pi-hole.net)
+ *  Network-wide ad blocking via your own hardware.
+ *
+ *  This file is copyright under the latest version of the EUPL.
+ *  Please see LICENSE file for your rights under this license. */
 
 function is_valid_domain_name($domain_name)
 {
-    return (preg_match("/^((-|_)*[a-z\d]((-|_)*[a-z\d])*(-|_)*)(\.(-|_)*([a-z\d]((-|_)*[a-z\d])*))*$/i", $domain_name) && // Valid chars check
-        preg_match("/^.{1,253}$/", $domain_name) && // Overall length check
-        preg_match("/^[^\.]{1,63}(\.[^\.]{1,63})*$/", $domain_name)); // Length of each label
+    return preg_match("/^((-|_)*[a-z\d]((-|_)*[a-z\d])*(-|_)*)(\.(-|_)*([a-z\d]((-|_)*[a-z\d])*))*$/i", $domain_name) && // Valid chars check
+    preg_match("/^.{1,253}$/", $domain_name) && // Overall length check
+        preg_match("/^[^\.]{1,63}(\.[^\.]{1,63})*$/", $domain_name); // Length of each label
 }
 
 function get_ip_type($ip)
 {
-    return  filter_var($ip, FILTER_VALIDATE_IP, FILTER_FLAG_IPV4) ? 4 :
-           (filter_var($ip, FILTER_VALIDATE_IP, FILTER_FLAG_IPV6) ? 6 :
-            0);
+    return filter_var($ip, FILTER_VALIDATE_IP, FILTER_FLAG_IPV4) ? 4 : (filter_var($ip, FILTER_VALIDATE_IP, FILTER_FLAG_IPV6) ? 6 : 0);
 }
 
-function checkfile($filename) {
-    if(is_readable($filename))
-    {
+function checkfile($filename)
+{
+    if (is_readable($filename)) {
         return $filename;
-    }
-    else
-    {
+    } else {
         // substitute dummy file
         return "/dev/null";
     }
 }
 
 // Credit: http://php.net/manual/en/function.hash-equals.php#119576
-if(!function_exists('hash_equals')) {
-    function hash_equals($known_string, $user_string) {
+if (!function_exists("hash_equals")) {
+    function hash_equals($known_string, $user_string)
+    {
         $ret = 0;
 
         if (strlen($known_string) !== strlen($user_string)) {
-         $user_string = $known_string;
-         $ret = 1;
+            $user_string = $known_string;
+            $ret = 1;
         }
 
         $res = $known_string ^ $user_string;
 
         for ($i = strlen($res) - 1; $i >= 0; --$i) {
-         $ret |= ord($res[$i]);
+            $ret |= ord($res[$i]);
         }
 
         return !$ret;
-   }
+    }
 }
 
 /**
@@ -68,14 +65,14 @@ if(!function_exists('hash_equals')) {
  * @param $argument_string String of arguments to run pihole with.
  * @param $error_on_failure If true, a warning is raised if command execution fails. Defaults to true.
  */
-function pihole_execute($argument_string, $error_on_failure = true) {
+function pihole_execute($argument_string, $error_on_failure = true)
+{
     $escaped = escapeshellcmd($argument_string);
     $output = null;
     $return_status = -1;
     $command = "sudo pihole " . $escaped;
     exec($command, $output, $return_status);
-    if($return_status !== 0)
-    {
+    if ($return_status !== 0) {
         trigger_error("Executing {$command} failed.", E_USER_WARNING);
     }
     return $output;
@@ -88,29 +85,30 @@ function echoCustomDNSEntries()
 {
     $entries = getCustomDNSEntries();
 
-    $data = [];
-    foreach ($entries as $entry)
-        $data[] = [ $entry->domain, $entry->ip ];
+    $data = array();
+    foreach ($entries as $entry) {
+        $data[] = array($entry->domain, $entry->ip);
+    }
 
-    return [ "data" => $data ];
+    return array("data" => $data);
 }
 
 function getCustomDNSEntries()
 {
     global $customDNSFile;
 
-    $entries = [];
+    $entries = array();
 
     $handle = fopen($customDNSFile, "r");
-    if ($handle)
-    {
+    if ($handle) {
         while (($line = fgets($handle)) !== false) {
-            $line = str_replace("\r","", $line);
-            $line = str_replace("\n","", $line);
-            $explodedLine = explode (" ", $line);
+            $line = str_replace("\r", "", $line);
+            $line = str_replace("\n", "", $line);
+            $explodedLine = explode(" ", $line);
 
-            if (count($explodedLine) != 2)
+            if (count($explodedLine) != 2) {
                 continue;
+            }
 
             $data = new \stdClass();
             $data->ip = $explodedLine[0];
@@ -124,111 +122,113 @@ function getCustomDNSEntries()
     return $entries;
 }
 
-function addCustomDNSEntry($ip="", $domain="", $json=true)
+function addCustomDNSEntry($ip = "", $domain = "", $json = true)
 {
-    try
-    {
-        if(isset($_REQUEST['ip']))
-            $ip = trim($_REQUEST['ip']);
+    try {
+        if (isset($_REQUEST["ip"])) {
+            $ip = trim($_REQUEST["ip"]);
+        }
 
-        if(isset($_REQUEST['domain']))
-            $domain = trim($_REQUEST['domain']);
+        if (isset($_REQUEST["domain"])) {
+            $domain = trim($_REQUEST["domain"]);
+        }
 
-        if (empty($ip))
+        if (empty($ip)) {
             return returnError("IP must be set", $json);
+        }
 
         $ipType = get_ip_type($ip);
 
-        if (!$ipType)
+        if (!$ipType) {
             return returnError("IP must be valid", $json);
+        }
 
-        if (empty($domain))
+        if (empty($domain)) {
             return returnError("Domain must be set", $json);
+        }
 
-        if (!is_valid_domain_name($domain))
+        if (!is_valid_domain_name($domain)) {
             return returnError("Domain must be valid", $json);
+        }
 
         // Only check for duplicates if adding new records from the web UI (not through Teleporter)
-        if(isset($_REQUEST['ip']) || isset($_REQUEST['domain']))
-        {
+        if (isset($_REQUEST["ip"]) || isset($_REQUEST["domain"])) {
             $existingEntries = getCustomDNSEntries();
-            foreach ($existingEntries as $entry)
-                if ($entry->domain == $domain && get_ip_type($entry->ip) == $ipType)
+            foreach ($existingEntries as $entry) {
+                if ($entry->domain == $domain && get_ip_type($entry->ip) == $ipType) {
                     return returnError("This domain already has a custom DNS entry for an IPv" . $ipType, $json);
+                }
+            }
         }
 
         // Add record
-        pihole_execute("-a addcustomdns ".$ip." ".$domain);
+        pihole_execute("-a addcustomdns " . $ip . " " . $domain);
 
         return returnSuccess("", $json);
-    }
-    catch (\Exception $ex)
-    {
+    } catch (\Exception $ex) {
         return error($ex->getMessage(), $json);
     }
 }
 
 function deleteCustomDNSEntry()
 {
-    try
-    {
-        $ip = !empty($_REQUEST['ip']) ? $_REQUEST['ip']: "";
-        $domain = !empty($_REQUEST['domain']) ? $_REQUEST['domain']: "";
+    try {
+        $ip = !empty($_REQUEST["ip"]) ? $_REQUEST["ip"] : "";
+        $domain = !empty($_REQUEST["domain"]) ? $_REQUEST["domain"] : "";
 
-        if (empty($ip))
+        if (empty($ip)) {
             return returnError("IP must be set");
+        }
 
-        if (empty($domain))
+        if (empty($domain)) {
             return returnError("Domain must be set");
+        }
 
         $existingEntries = getCustomDNSEntries();
 
         $found = false;
-        foreach ($existingEntries as $entry)
-            if ($entry->domain == $domain)
+        foreach ($existingEntries as $entry) {
+            if ($entry->domain == $domain) {
                 if ($entry->ip == $ip) {
                     $found = true;
                     break;
                 }
+            }
+        }
 
-        if (!$found)
+        if (!$found) {
             return returnError("This domain/ip association does not exist");
+        }
 
-        pihole_execute("-a removecustomdns ".$ip." ".$domain);
+        pihole_execute("-a removecustomdns " . $ip . " " . $domain);
 
         return returnSuccess();
-    }
-    catch (\Exception $ex)
-    {
+    } catch (\Exception $ex) {
         return returnError($ex->getMessage());
     }
 }
 
 function deleteAllCustomDNSEntries()
 {
-    if (isset($customDNSFile))
-    {
+    if (isset($customDNSFile)) {
         $handle = fopen($customDNSFile, "r");
-        if ($handle)
-        {
-            try
-            {
+        if ($handle) {
+            try {
                 while (($line = fgets($handle)) !== false) {
-                    $line = str_replace("\r","", $line);
-                    $line = str_replace("\n","", $line);
-                    $explodedLine = explode (" ", $line);
+                    $line = str_replace("\r", "", $line);
+                    $line = str_replace("\n", "", $line);
+                    $explodedLine = explode(" ", $line);
 
-                    if (count($explodedLine) != 2)
+                    if (count($explodedLine) != 2) {
                         continue;
+                    }
 
                     $ip = $explodedLine[0];
                     $domain = $explodedLine[1];
 
-                    pihole_execute("-a removecustomdns ".$ip." ".$domain);
+                    pihole_execute("-a removecustomdns " . $ip . " " . $domain);
                 }
-            }
-            catch (\Exception $ex)
-            {
+            } catch (\Exception $ex) {
                 return errorJsonResponse($ex->getMessage());
             }
 
@@ -246,37 +246,40 @@ function echoCustomCNAMEEntries()
 {
     $entries = getCustomCNAMEEntries();
 
-    $data = [];
-    foreach ($entries as $entry)
-        $data[] = [ $entry->domain, $entry->target ];
+    $data = array();
+    foreach ($entries as $entry) {
+        $data[] = array($entry->domain, $entry->target);
+    }
 
-    return [ "data" => $data ];
+    return array("data" => $data);
 }
 
 function getCustomCNAMEEntries()
 {
     global $customCNAMEFile;
 
-    $entries = [];
+    $entries = array();
 
-    if (!file_exists($customCNAMEFile)) return $entries;
+    if (!file_exists($customCNAMEFile)) {
+        return $entries;
+    }
 
     $handle = fopen($customCNAMEFile, "r");
-    if ($handle)
-    {
+    if ($handle) {
         while (($line = fgets($handle)) !== false) {
-            $line = str_replace("cname=","", $line);
-            $line = str_replace("\r","", $line);
-            $line = str_replace("\n","", $line);
-            $explodedLine = explode (",", $line);
+            $line = str_replace("cname=", "", $line);
+            $line = str_replace("\r", "", $line);
+            $line = str_replace("\n", "", $line);
+            $explodedLine = explode(",", $line);
 
-            if (count($explodedLine) <= 1)
+            if (count($explodedLine) <= 1) {
                 continue;
+            }
 
             $data = new \stdClass();
             $data->domains = array_slice($explodedLine, 0, -1);
             $data->domain = implode(",", $data->domains);
-            $data->target = $explodedLine[count($explodedLine)-1];
+            $data->target = $explodedLine[count($explodedLine) - 1];
             $entries[] = $data;
         }
 
@@ -286,96 +289,99 @@ function getCustomCNAMEEntries()
     return $entries;
 }
 
-function addCustomCNAMEEntry($domain="", $target="", $json=true)
+function addCustomCNAMEEntry($domain = "", $target = "", $json = true)
 {
-    try
-    {
-        if(isset($_REQUEST['domain']))
-            $domain = $_REQUEST['domain'];
+    try {
+        if (isset($_REQUEST["domain"])) {
+            $domain = $_REQUEST["domain"];
+        }
 
-        if(isset($_REQUEST['target']))
-            $target = $_REQUEST['target'];
+        if (isset($_REQUEST["target"])) {
+            $target = $_REQUEST["target"];
+        }
 
-        if (empty($domain))
+        if (empty($domain)) {
             return returnError("Domain must be set", $json);
+        }
 
-        if (empty($target))
+        if (empty($target)) {
             return returnError("Target must be set", $json);
+        }
 
         // Check if each submitted domain is valid
-        $domains = array_map('trim', explode(",", $domain));
+        $domains = array_map("trim", explode(",", $domain));
         foreach ($domains as $d) {
-            if (!is_valid_domain_name($d))
+            if (!is_valid_domain_name($d)) {
                 return returnError("Domain '$d' is not valid", $json);
+            }
         }
 
         $existingEntries = getCustomCNAMEEntries();
 
         // Check if a record for one of the domains already exists
-        foreach ($existingEntries as $entry)
-            foreach ($domains as $d)
-                if (in_array($d, $entry->domains))
+        foreach ($existingEntries as $entry) {
+            foreach ($domains as $d) {
+                if (in_array($d, $entry->domains)) {
                     return returnError("There is already a CNAME record for '$d'", $json);
+                }
+            }
+        }
 
-        pihole_execute("-a addcustomcname ".$domain." ".$target);
+        pihole_execute("-a addcustomcname " . $domain . " " . $target);
 
         return returnSuccess("", $json);
-    }
-    catch (\Exception $ex)
-    {
+    } catch (\Exception $ex) {
         return returnError($ex->getMessage(), $json);
     }
 }
 
 function deleteCustomCNAMEEntry()
 {
-    try
-    {
-        $target = !empty($_REQUEST['target']) ? $_REQUEST['target']: "";
-        $domain = !empty($_REQUEST['domain']) ? $_REQUEST['domain']: "";
+    try {
+        $target = !empty($_REQUEST["target"]) ? $_REQUEST["target"] : "";
+        $domain = !empty($_REQUEST["domain"]) ? $_REQUEST["domain"] : "";
 
-        if (empty($target))
+        if (empty($target)) {
             return returnError("Target must be set");
+        }
 
-        if (empty($domain))
+        if (empty($domain)) {
             return returnError("Domain must be set");
+        }
 
         $existingEntries = getCustomCNAMEEntries();
 
         $found = false;
-        foreach ($existingEntries as $entry)
-            if ($entry->domain == $domain)
+        foreach ($existingEntries as $entry) {
+            if ($entry->domain == $domain) {
                 if ($entry->target == $target) {
                     $found = true;
                     break;
                 }
+            }
+        }
 
-        if (!$found)
+        if (!$found) {
             return returnError("This domain/ip association does not exist");
+        }
 
-        pihole_execute("-a removecustomcname ".$domain." ".$target);
+        pihole_execute("-a removecustomcname " . $domain . " " . $target);
 
         return returnSuccess();
-    }
-    catch (\Exception $ex)
-    {
+    } catch (\Exception $ex) {
         return returnError($ex->getMessage());
     }
 }
 
 function deleteAllCustomCNAMEEntries()
 {
-    try
-    {
+    try {
         $existingEntries = getCustomCNAMEEntries();
 
         foreach ($existingEntries as $entry) {
-            pihole_execute("-a removecustomcname ".$entry->domain." ".$entry->target);
+            pihole_execute("-a removecustomcname " . $entry->domain . " " . $entry->target);
         }
-
-    }
-    catch (\Exception $ex)
-    {
+    } catch (\Exception $ex) {
         return returnError($ex->getMessage());
     }
 
@@ -385,9 +391,9 @@ function deleteAllCustomCNAMEEntries()
 function returnSuccess($message = "", $json = true)
 {
     if ($json) {
-        return [ "success" => true, "message" => $message ];
+        return array("success" => true, "message" => $message);
     } else {
-        echo $msg."<br>";
+        echo $msg . "<br>";
         return true;
     }
 }
@@ -395,9 +401,9 @@ function returnSuccess($message = "", $json = true)
 function returnError($message = "", $json = true)
 {
     if ($json) {
-        return [ "success" => false, "message" => $message ];
+        return array("success" => false, "message" => $message);
     } else {
-        echo $msg."<br>";
+        echo $msg . "<br>";
         return false;
     }
 }
