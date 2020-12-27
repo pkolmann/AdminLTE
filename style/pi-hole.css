@@ -326,3 +326,27 @@
   color: #f6f6f6;
   background: #367fa9;
 }
+
+.list-status-0 {
+  color: #7D7D7D;
+}
+
+.list-status-1 {
+  color: #74c700;
+}
+
+.list-status-2 {
+  color: #98ca52;
+}
+
+.list-status-3 {
+  color: #ff8c00;
+}
+
+.list-status-4 {
+  color: #cc0000;
+}
+
+td.details-control {
+  cursor: pointer;
+}
